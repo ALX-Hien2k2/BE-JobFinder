@@ -1,0 +1,80 @@
+const mongoose = require('mongoose');
+const Schema = mongoose.Schema;
+
+const userSchema = new Schema({
+    userType: {
+        type: Number,
+        enum: [1, 2, 3],
+        required: true
+    },
+    email: {
+        type: String,
+        required: true,
+        unique: true
+    },
+    password: {
+        type: String,
+        required: true
+    },
+    phone: {
+        type: String,
+        required: true
+    },
+    address: {
+        type: String,
+        required: true
+    },
+    avatar: {
+        type: String
+    },
+    description: {
+        type: String
+    }
+},
+{ timestamps: true });
+
+const jobSeekerSchema = new Schema({
+    name: {
+        type: String,
+        required: true
+    },
+    dob: {
+        type: Date,
+    },
+    experience: {
+        type: [String],
+    },
+    academicLevel: {
+        type: [String],
+    },
+    skills: {
+        type: [String],
+    }
+});
+
+const employerSchema = new Schema({
+    companyName: {
+        type: String,
+        required: true
+    },
+    field: {
+        type: String,
+        required: true
+    }
+});
+
+const adminSchema = new Schema({
+  
+});
+
+const User = mongoose.model('User', userSchema, "Users");
+const JobSeeker = User.discriminator('JobSeeker', jobSeekerSchema, 'JobSeekers');
+const Employer = User.discriminator('Employer', employerSchema, 'Employers');
+const Admin = User.discriminator('Admin', adminSchema, 'Admins');
+
+module.exports = {
+    User,
+    JobSeeker,
+    Employer,
+    Admin
+};
