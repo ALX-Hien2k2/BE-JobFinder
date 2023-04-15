@@ -2,42 +2,45 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const PostSchema = new Schema({
+    userId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User', // Tham chiếu đến model User (nếu có)
+        required: true,
+    },
     title: {
         type: String,
-        required: true
+        required: true,
     },
-    company: {
+    position: {
         type: String,
-        required: true
-    },
-    location: {
-        type: String,
-        required: true
+        required: true,
     },
     description: {
         type: String,
-        required: true
+        required: true,
     },
-    requirements: {
+    jobRequirement: {
         type: String,
-        required: true
+        required: true,
     },
     salary: {
         type: Number,
-        required: true
+        required: true,
     },
-    contactEmail: {
+    address: {
         type: String,
-        required: true
+        required: true,
     },
-    contactPhone: {
-        type: String,
-        required: true
-    },
-    createdAt: {
+    expiredDate: {
         type: Date,
-        default: Date.now
-    }
-});
+        required: true,
+    },
+    status: {
+        type: Number,
+        enum: [1, 2, 3, 4, 5],
+        default: 1,
+    },
+},
+{ timestamps: true });
 
 module.exports = mongoose.model("Post", PostSchema, "Posts");
