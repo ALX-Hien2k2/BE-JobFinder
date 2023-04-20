@@ -59,10 +59,25 @@ const updatePost = asyncWrapper(async (req, res, next) => {
     res.status(200).json({ post })
 })
 
+const approvePost = asyncWrapper(async (req, res, next) => {
+    let post_id = req.params.id;
+    const statusCode = parseInt(req.body.status);
+    const post = await Post.findOneAndUpdate({ _id: post_id }, {status: statusCode}, {
+        new: true,
+        runValidators: true,
+    })
+    if (!post) {
+        return next(createCustomError(`No post with id: ${post_id}`, 404))
+    }
+    res.status(200).json({ post })
+})
+
+
 module.exports = {
     getAllPosts,
     createPost,
     getPost,
     deletePost,
     updatePost,
+    approvePost,
 }

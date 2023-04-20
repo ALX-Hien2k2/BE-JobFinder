@@ -38,7 +38,7 @@ const PostSchema = new Schema({
     status: {
         type: Number,
         enum: [1, 2, 3, 4, 5],
-        default: 1,
+        default: 2,
     },
 },
 { timestamps: true });
