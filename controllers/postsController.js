@@ -9,7 +9,6 @@ const getAllPosts = asyncWrapper(async (req, res) => {
 })
 
 const createPost = asyncWrapper(async (req, res) => {
-    console.log("req.body", req.body)
     let post = await Post.create(req.body)
     res.status(201).json({ post })
 })

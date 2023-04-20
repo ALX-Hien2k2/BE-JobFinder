@@ -31,7 +31,7 @@ const userSchema = new Schema({
         type: String
     }
 },
-{ timestamps: true });
+    { timestamps: true });
 
 const jobSeekerSchema = new Schema({
     name: {
@@ -64,13 +64,13 @@ const employerSchema = new Schema({
 });
 
 const adminSchema = new Schema({
-  
+
 });
 
 const User = mongoose.model('User', userSchema, "Users");
-const JobSeeker = User.discriminator('JobSeeker', jobSeekerSchema, 'JobSeekers');
-const Employer = User.discriminator('Employer', employerSchema, 'Employers');
-const Admin = User.discriminator('Admin', adminSchema, 'Admins');
+const JobSeeker = User.discriminator('JobSeeker', jobSeekerSchema);
+const Employer = User.discriminator('Employer', employerSchema);
+const Admin = User.discriminator('Admin', adminSchema);
 
 module.exports = {
     User,
