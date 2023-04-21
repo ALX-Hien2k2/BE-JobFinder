@@ -1,4 +1,4 @@
-const { User, User } = require('../models/Users')
+const { User, JobSeeker, Employer, Admin } = require('../models/Users')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const bcrypt = require('bcryptjs');
@@ -26,8 +26,6 @@ const signUp = asyncWrapper(async (req, res, next) => {
         newUser = await Admin.create(req.body)
     }
 
-    newUser = newUser.toObject()
-
     // Create token
     const token = jwt.sign(
         { id: newUser._id, email: newUser.email },
@@ -37,7 +35,10 @@ const signUp = asyncWrapper(async (req, res, next) => {
         }
     );
 
+    newUser = newUser._doc
+    delete newUser.password
     newUser.token = token
+
     res.status(201).json({ newUser })
 })
 
@@ -64,10 +65,18 @@ const signIn = asyncWrapper(async (req, res, next) => {
             expiresIn: "30s",
         }
     );
-    user = user.toObject()
+
+    user = user._doc
+    delete user.password
     user.token = token
 
     res.status(201).json({ user })
+})
+
+const getAllUserProfiles = asyncWrapper(async (req, res, next) => {
+    const users = await User.find({}).select('-password')
+    console.log("users", users)
+    res.status(200).json({ users })
 })
 
 const getUserProfile = asyncWrapper(async (req, res, next) => {
@@ -76,12 +85,13 @@ const getUserProfile = asyncWrapper(async (req, res, next) => {
     if (!user) {
         return next(createCustomError(`No user with id: ${userId}`, 404))
     }
-    const { password, userType, __t, ...other } = user._doc
+    const { password, ...other } = user._doc
     res.status(200).json({ user: other })
 })
 
 module.exports = {
     signUp,
     signIn,
+    getAllUserProfiles,
     getUserProfile
 }

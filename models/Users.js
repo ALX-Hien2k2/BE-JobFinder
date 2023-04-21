@@ -22,7 +22,7 @@ const userSchema = new Schema({
     },
     address: {
         type: String,
-        required: true
+        required: true // Jobseeker/Admin thì có thể không bắt buộc
     },
     avatar: {
         type: String

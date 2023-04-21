@@ -2,12 +2,14 @@ const express = require('express')
 const router = express.Router()
 
 const {
-    getUserProfile,
     signUp,
-    signIn
+    signIn,
+    getAllUserProfiles,
+    getUserProfile,
 } = require('../controllers/userController')
 
 router.route('/').post(signUp).get(signIn)
+router.route('/list').get(getAllUserProfiles)
 router.route('/:id').get(getUserProfile)
 
 
