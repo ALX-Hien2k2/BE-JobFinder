@@ -1,11 +1,6 @@
-const {User} = require('../models/Users')
+const { User } = require('../models/Users')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
-
-
-const createUser = asyncWrapper(async (req, res, next) => {
-    
-})
 
 const getUserProfile = asyncWrapper(async (req, res, next) => {
     const userId = req.params.id;
@@ -13,10 +8,8 @@ const getUserProfile = asyncWrapper(async (req, res, next) => {
     if (!user) {
         return next(createCustomError(`No user with id: ${userId}`, 404))
     }
-    const {password, userType,__t, ...other} = user._doc
+    const { password, userType, __t, ...other } = user._doc
     res.status(200).json({ user: other })
 })
 
-
-
-module.exports = {createUser, getUserProfile}
+module.exports = { getUserProfile }
