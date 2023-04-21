@@ -41,17 +41,36 @@ const signUp = asyncWrapper(async (req, res, next) => {
     res.status(201).json({ newUser })
 })
 
-// const signIn = asyncWrapper(async (req, res, next) => {
-//     const { email, password } = req.body;
-//     let user = await User.findOne({ email: email })
-//     if (!user) {
-//         return next(createCustomError("Invalid email or password", 409))
-//     }
+const signIn = asyncWrapper(async (req, res, next) => {
+    const { email, password } = req.body;
 
-//     res.status(201).json({ user })
-// })
+    // Check if user exists
+    let user = await User.findOne({ email: email })
+    if (!user) {
+        return next(createCustomError("Invalid email or password", 409))
+    }
+
+    // Check if password is correct
+    const isPasswordCorrect = bcrypt.compareSync(password, user.password)
+    if (!isPasswordCorrect) {
+        return next(createCustomError("Invalid email or password", 409))
+    }
+
+    // Create token
+    const token = jwt.sign(
+        { id: user._id, email: user.email },
+        process.env.TOKEN_SECRET,
+        {
+            expiresIn: "30s",
+        }
+    );
+    user = user.toObject()
+    user.token = token
+
+    res.status(201).json({ user })
+})
 
 module.exports = {
     signUp,
-    // signIn,
+    signIn,
 }

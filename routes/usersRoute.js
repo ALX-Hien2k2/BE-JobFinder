@@ -3,11 +3,10 @@ const router = express.Router()
 
 const {
     signUp,
-    // signIn
+    signIn
 } = require('../controllers/userController')
 
-// router.route('/').post(signUp).get(signIn)
-router.route('/').post(signUp)
+router.route('/').post(signUp).get(signIn)
 
 
 module.exports = router;
