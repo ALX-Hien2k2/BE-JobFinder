@@ -4,20 +4,20 @@ const Schema = mongoose.Schema;
 const PostSchema = new Schema({
     userId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'User',
-        required: true
+        ref: 'User', // Tham chiếu đến model User (nếu có)
+        required: true,
     },
     title: {
         type: String,
-        required: true
+        required: true,
     },
     position: {
         type: String,
-        required: true
+        required: true,
     },
     description: {
         type: String,
-        required: true
+        required: true,
     },
     jobRequirement: {
         type: [String],
@@ -25,11 +25,11 @@ const PostSchema = new Schema({
     },
     salary: {
         type: Number,
-        required: true
+        required: true,
     },
     address: {
         type: String,
-        required: true
+        required: true,
     },
     expiredDate: {
         type: Date,
