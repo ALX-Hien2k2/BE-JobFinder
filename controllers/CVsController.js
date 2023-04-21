@@ -1,4 +1,4 @@
-const {CV} = require('../models/CVs')
+const { CV } = require('../models/CVs')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 
@@ -43,10 +43,24 @@ const updateCV = asyncWrapper(async (req, res, next) => {
     res.status(200).json(cv)
 })
 
+const approveCV = asyncWrapper(async (req, res, next) => {
+    let CV_id = req.params.id;
+    const statusCode = parseInt(req.body.status);
+    const cv = await CV.findOneAndUpdate({ _id: CV_id }, { status: statusCode }, {
+        new: true,
+        runValidators: true,
+    })
+    if (!cv) {
+        return next(createCustomError(`No CV with id: ${CV_id}`, 404))
+    }
+    res.status(200).json(cv)
+})
+
 module.exports = {
     getAllCVs,
     createCV,
     getCV,
     deleteCV,
     updateCV,
+    approveCV,
 }
