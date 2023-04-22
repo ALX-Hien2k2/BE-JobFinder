@@ -3,30 +3,19 @@ const dotenv = require('dotenv');
 const cors = require("cors");
 
 const connectToDatabase = require('./config/database');
-
-const posts = require('./routes/postsRoute')
-const users = require('./routes/usersRoute')
-const cvs = require('./routes/cvsRoute')
-
 const app = express()
-
+const route = require('./routes')
 // Setup
 dotenv.config();
 const PORT = process.env.SERVER_PORT || 2345;
-const notFound = require('./middlewares/not-found')
-const errorHandlerMiddleware = require('./middlewares/error-handler')
+
 
 // middlewares
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
-// routes
-app.use('/api/v1/posts', posts)
-app.use('/api/v1/users', users)
-app.use('/api/v1/cvs', cvs)
-app.use(notFound)
-app.use(errorHandlerMiddleware)
+route(app)
 
 
 // Connect to database
