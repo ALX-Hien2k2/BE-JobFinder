@@ -3,38 +3,36 @@ const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 
 const getAllUserProfiles = asyncWrapper(async (req, res, next) => {
-    const users = await User.find({}).select('-password')
-    console.log("users", users)
+    let users = await User.find({}).select('-password')
     res.status(200).json(users)
 })
 
 const getUserProfile = asyncWrapper(async (req, res, next) => {
-    const user_id = req.user.id;
-    console.log("user_id", user_id)
-    let user = await User.findOne({ _id: user_id })
+    let user_id = req.params.id;
+    let user = await User.findOne({ _id: user_id }).select('-password')
     if (!user) {
         return next(createCustomError(`No user with id: ${user_id}`, 404))
     }
-    const { password, ...other } = user._doc
-    res.status(200).json(other)
+    res.status(200).json(user)
 })
 
 // Update depending on userType
 // Can only update fields that are allowed for that userType
 const updateUserProfile = asyncWrapper(async (req, res, next) => {
-    const user_id = req.user.id;
-    console.log("user_id", user_id)
-    console.log("req.body", req.body)
+    let user_id = req.params.id;
 
-    // Check if password is being updated
-    if (req.body.password) {
-        return next(createCustomError(`Cannot update password using this route`, 400))
+    // Can't update some fields
+    if (req.body.email || req.body.password || req.body.userType) {
+        return next(createCustomError(`Can't update email or password or userType of post using this route`, 400))
     }
 
-    const user = await User.findById(user_id);
-    console.log("user", user)
+    let user = await User.findById(user_id);
     if (!user) {
         return next(createCustomError(`No user with id: ${user_id}`, 404))
+    }
+
+    if (user._id != req.user.id) {
+        return next(createCustomError(`Can't update other user's profile`, 401))
     }
 
     let userUpdate
@@ -54,7 +52,7 @@ const updateUserProfile = asyncWrapper(async (req, res, next) => {
             runValidators: true,
         });
     }
-    console.log("userUpdate", userUpdate)
+
     const { password, ...other } = userUpdate._doc
     res.status(200).json(other);
 })

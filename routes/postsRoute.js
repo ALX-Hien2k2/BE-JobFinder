@@ -13,7 +13,7 @@ const {
     approvePost,
 } = require('../controllers/postsController')
 
-router.route('/').get(PageSort, getAllPosts).post(verifyToken, verifyRoles(ROLES_LIST.Employer),createPost)
-router.route('/:id').get(getPost).patch(verifyToken,verifyRoles(ROLES_LIST.Employer), updatePost).delete(verifyToken, verifyRoles(ROLES_LIST.Employer, ROLES_LIST.Admin),deletePost).put(verifyToken, verifyRoles(ROLES_LIST.Admin), approvePost)
+router.route('/').get(PageSort, getAllPosts).post(verifyToken, verifyRoles(ROLES_LIST.Employer), createPost)
+router.route('/:id').get(getPost).patch(verifyToken, verifyRoles(ROLES_LIST.Employer), updatePost).delete(verifyToken, verifyRoles(ROLES_LIST.Employer, ROLES_LIST.Admin), deletePost).put(verifyToken, verifyRoles(ROLES_LIST.Admin), approvePost)
 
 module.exports = router
