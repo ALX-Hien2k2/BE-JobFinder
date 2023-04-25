@@ -21,7 +21,9 @@ const getAllCVs = asyncWrapper(async (req, res, next) => {
     }
     // console.log("conditions", conditions)
     // console.log("sortOptions", sortOptions)
-    let CVs = await CV.find(conditions).sort(sortOptions)
+    let CVs = await CV.find(conditions)
+        .sort(sortOptions)
+        .populate("userId", "_id");
     res.status(200).json({ CVs })
 })
 
