@@ -3,7 +3,7 @@ const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 
 const getAllPosts = asyncWrapper(async (req, res) => {
-    const {maxSalary, minSalary} = req.query
+    const { maxSalary, minSalary } = req.query
     const { location, userId } = req.query;
     const conditions = {};
     if (location) {
@@ -12,12 +12,12 @@ const getAllPosts = asyncWrapper(async (req, res) => {
     if (userId) {
         conditions.userId = userId;
     }
-    conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000}
+    conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000 }
     let posts = await Post.find(conditions)
-    .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
-    .limit(process.env.PAGE_SIZE)
-    .sort({ [req.column]: req.sortOrder })
-    .populate("userId", "_id");
+        .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
+        .limit(process.env.PAGE_SIZE)
+        .sort({ [req.column]: req.sortOrder })
+        .populate("userId", "_id");
     res.status(200).json({ posts })
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
@@ -61,7 +61,7 @@ const updatePost = asyncWrapper(async (req, res, next) => {
 const approvePost = asyncWrapper(async (req, res, next) => {
     let post_id = req.params.id;
     const statusCode = parseInt(req.body.status);
-    const post = await Post.findOneAndUpdate({ _id: post_id }, {status: statusCode}, {
+    const post = await Post.findOneAndUpdate({ _id: post_id }, { status: statusCode }, {
         new: true,
         runValidators: true,
     })

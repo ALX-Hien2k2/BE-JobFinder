@@ -3,8 +3,28 @@ const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 
 const getAllCVs = asyncWrapper(async (req, res, next) => {
-    let CVs = await CV.find({})
-    res.status(200).json(CVs)
+    const { postId, userId } = req.query
+    const { status, sort } = req.query
+    let conditions = {}
+    let sortOptions = {}
+    if (postId) {
+        conditions.postId = postId
+    }
+    if (userId) {
+        conditions.userId = userId
+    }
+    if (status) {
+        conditions.status = status // 1: Chờ phê duyệt 2: Bị từ chối 3: Được đánh dấu là quan tâm 4: Được mời phỏng vấn
+    }
+    if (sort) {
+        sortOptions.createdAt = sort // 1: Tăng đần, -1: Giảm dần theo ngày tạo/ ngày apply
+    }
+    // console.log("conditions", conditions)
+    // console.log("sortOptions", sortOptions)
+    let CVs = await CV.find(conditions)
+        .sort(sortOptions)
+        .populate("userId", "_id");
+    res.status(200).json({ CVs })
 })
 
 const createCV = asyncWrapper(async (req, res, next) => {

@@ -1,4 +1,4 @@
-const { User, Admin, JobSeeker, Employer} = require('../models/Users')
+const { User, Admin, JobSeeker, Employer } = require('../models/Users')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const bcrypt = require('bcryptjs');
@@ -30,7 +30,7 @@ const signUp = asyncWrapper(async (req, res, next) => {
 
     // Create token
     const token = jwt.sign(
-        { id: newUser._id, email: newUser.email, role: newUser.userType},
+        { id: newUser._id, email: newUser.email, role: newUser.userType },
         process.env.TOKEN_SECRET,
         {
             expiresIn: "300s",
@@ -69,7 +69,6 @@ const signIn = asyncWrapper(async (req, res, next) => {
 
     res.status(201).json({ user })
 })
-
 
 module.exports = {
     signUp,
