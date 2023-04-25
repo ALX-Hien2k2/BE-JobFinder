@@ -6,7 +6,7 @@ const verifyToken = require('../middlewares/verifyToken')
 const notFound = require('../middlewares/not-found')
 const errorHandlerMiddleware = require('../middlewares/error-handler')
 
-const route = (app) =>{
+const route = (app) => {
     app.use('/api/v1/auth', authRoute);
     app.use('/api/v1/posts', postsRoute);
     app.use('/api/v1/users', verifyToken, usersRoute);

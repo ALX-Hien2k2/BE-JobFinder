@@ -13,6 +13,7 @@ const verifyToken = asyncWrapper(async (req, res, next) => {
     }
     const decoded = jwt.verify(token, config.TOKEN_SECRET);
     req.user = decoded;
+    console.log("req.user", req.user)
     next()
 });
 

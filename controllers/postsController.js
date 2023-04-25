@@ -3,6 +3,7 @@ const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 
 const getAllPosts = asyncWrapper(async (req, res) => {
+    console.log("req.query", req.query)
     const { maxSalary, minSalary } = req.query
     const { location, userId } = req.query;
     const conditions = {};
@@ -18,13 +19,13 @@ const getAllPosts = asyncWrapper(async (req, res) => {
         .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
         .populate("userId", "_id");
-    res.status(200).json({ posts })
+    res.status(200).json(posts)
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
 
 const createPost = asyncWrapper(async (req, res) => {
     let post = await Post.create(req.body)
-    res.status(201).json({ post })
+    res.status(201).json(post)
 })
 
 const getPost = asyncWrapper(async (req, res, next) => {
@@ -34,7 +35,7 @@ const getPost = asyncWrapper(async (req, res, next) => {
         return next(createCustomError(`No post with id: ${post_id}`, 404))
         // return res.status(404).json({ message: `No post with id: ${post_id}` })
     }
-    res.status(200).json({ post })
+    res.status(200).json(post)
 })
 
 const deletePost = asyncWrapper(async (req, res, next) => {
@@ -43,7 +44,7 @@ const deletePost = asyncWrapper(async (req, res, next) => {
     if (!post) {
         return next(createCustomError(`No post with id: ${post_id}`, 404))
     }
-    res.status(200).json({ post })
+    res.status(200).json(post)
 })
 
 const updatePost = asyncWrapper(async (req, res, next) => {
@@ -55,7 +56,7 @@ const updatePost = asyncWrapper(async (req, res, next) => {
     if (!post) {
         return next(createCustomError(`No post with id: ${post_id}`, 404))
     }
-    res.status(200).json({ post })
+    res.status(200).json(post)
 })
 
 const approvePost = asyncWrapper(async (req, res, next) => {
@@ -68,7 +69,7 @@ const approvePost = asyncWrapper(async (req, res, next) => {
     if (!post) {
         return next(createCustomError(`No post with id: ${post_id}`, 404))
     }
-    res.status(200).json({ post })
+    res.status(200).json(post)
 })
 
 

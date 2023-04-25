@@ -5,23 +5,24 @@ const { createCustomError } = require('../errors/custom-error')
 const getAllUserProfiles = asyncWrapper(async (req, res, next) => {
     const users = await User.find({}).select('-password')
     console.log("users", users)
-    res.status(200).json({ users })
+    res.status(200).json(users)
 })
 
 const getUserProfile = asyncWrapper(async (req, res, next) => {
-    const user_id = req.params.id;
+    const user_id = req.user.id;
+    console.log("user_id", user_id)
     let user = await User.findOne({ _id: user_id })
     if (!user) {
         return next(createCustomError(`No user with id: ${user_id}`, 404))
     }
     const { password, ...other } = user._doc
-    res.status(200).json({ user: other })
+    res.status(200).json(other)
 })
 
 // Update depending on userType
 // Can only update fields that are allowed for that userType
 const updateUserProfile = asyncWrapper(async (req, res, next) => {
-    const user_id = req.params.id;
+    const user_id = req.user.id;
     console.log("user_id", user_id)
     console.log("req.body", req.body)
 
