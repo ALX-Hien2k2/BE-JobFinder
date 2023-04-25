@@ -1,9 +1,10 @@
-const verifyRole = (userType) => {
+const verifyRoles = (...allowedRoles) => {
   return (req, res, next) => {
     if (!req?.user.role) return res.sendStatus(401);
-    if (req.user.role !== userType) return res.sendStatus(401);
+    const rolesArray = [...allowedRoles];
+    if (!rolesArray.includes(req.user.role)) return res.sendStatus(401);
     next();
   };
 };
 
-module.exports = verifyRole;
+module.exports = verifyRoles;
