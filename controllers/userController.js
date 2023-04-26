@@ -23,7 +23,7 @@ const updateUserProfile = asyncWrapper(async (req, res, next) => {
 
     // Can't update some fields
     if (req.body.email || req.body.password || req.body.userType) {
-        return next(createCustomError(`Can't update email or password or userType of post using this route`, 400))
+        return next(createCustomError(`Can't update email or password or userType of user using this route`, 400))
     }
 
     let user = await User.findById(user_id);

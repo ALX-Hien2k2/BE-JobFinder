@@ -38,7 +38,7 @@ const signUp = asyncWrapper(async (req, res, next) => {
     );
 
     newUser.token = token
-    res.status(201).json({ newUser })
+    res.status(201).json(newUser)
 })
 
 const signIn = asyncWrapper(async (req, res, next) => {
@@ -67,7 +67,7 @@ const signIn = asyncWrapper(async (req, res, next) => {
     user = user.toObject()
     user.token = token
 
-    res.status(201).json({ user })
+    res.status(201).json(user)
 })
 
 module.exports = {

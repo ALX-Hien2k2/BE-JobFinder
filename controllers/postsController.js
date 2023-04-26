@@ -2,7 +2,8 @@ const Post = require('../models/Post')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const ROLES_LIST = require('../config/allowedRoles')
-//used by guest or jobseeker
+
+// Used by guest or jobseeker
 const getAllPosts = asyncWrapper(async (req, res) => {
     console.log("req.query", req.query)
     const { maxSalary, minSalary } = req.query
@@ -27,7 +28,7 @@ const getAllPosts = asyncWrapper(async (req, res) => {
 
 const createPost = asyncWrapper(async (req, res) => {
     let post = await Post.create({ ...req.body, userId: req.user.id })
-    res.status(201).json({ post })
+    res.status(201).json(post)
 })
 
 const getPost = asyncWrapper(async (req, res, next) => {
@@ -56,7 +57,7 @@ const deletePost = asyncWrapper(async (req, res, next) => {
         post = await Post.findOneAndDelete({ _id: post_id })
     }
 
-    res.status(200).json({ post })
+    res.status(200).json(post)
 })
 
 const updatePost = asyncWrapper(async (req, res, next) => {
@@ -76,7 +77,7 @@ const updatePost = asyncWrapper(async (req, res, next) => {
         new: true,
         runValidators: true,
     })
-    res.status(200).json({ post })
+    res.status(200).json(post)
 })
 
 const approvePost = asyncWrapper(async (req, res, next) => {

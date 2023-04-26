@@ -1,9 +1,10 @@
 const express = require('express')
 const router = express.Router()
 const ROLES_LIST = require('../config/allowedRoles')
-const verifyRole = require('../middlewares/verifyRoles')
+const verifyRoles = require('../middlewares/verifyRoles')
 const {
     getAllCVs,
+    getAppliedCVs,
     createCV,
     getCV,
     deleteCV,
@@ -11,7 +12,8 @@ const {
     approveCV,
 } = require('../controllers/CVsController')
 
-router.route('/').get(getAllCVs).post(createCV)
-router.route('/:id').get(getCV).patch(updateCV).delete(deleteCV).put(verifyRole(ROLES_LIST.Employer),approveCV)
+router.route('/').get(verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Employer), getAllCVs).post(verifyRoles(ROLES_LIST.JobSeeker), createCV)
+router.route('/jobseeker').get(verifyRoles(ROLES_LIST.JobSeeker), getAppliedCVs)
+router.route('/:id').get(getCV).patch(verifyRoles(ROLES_LIST.JobSeeker), updateCV).delete(verifyRoles(ROLES_LIST.JobSeeker), deleteCV).put(verifyRoles(ROLES_LIST.Employer), approveCV)
 
 module.exports = router
