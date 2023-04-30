@@ -12,8 +12,16 @@ const {
     approveCV,
 } = require('../controllers/CVsController')
 
-router.route('/').get(verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Employer), getAllCVs).post(verifyRoles(ROLES_LIST.JobSeeker), createCV)
+router.route('/')
+    .get(verifyRoles(ROLES_LIST.Admin, ROLES_LIST.Employer), getAllCVs)
+    .post(verifyRoles(ROLES_LIST.JobSeeker), createCV)
+
 router.route('/jobseeker').get(verifyRoles(ROLES_LIST.JobSeeker), getAppliedCVs)
-router.route('/:id').get(getCV).patch(verifyRoles(ROLES_LIST.JobSeeker), updateCV).delete(verifyRoles(ROLES_LIST.JobSeeker), deleteCV).put(verifyRoles(ROLES_LIST.Employer), approveCV)
+
+router.route('/:id')
+    .get(getCV)
+    .patch(verifyRoles(ROLES_LIST.JobSeeker), updateCV)
+    .delete(verifyRoles(ROLES_LIST.JobSeeker), deleteCV)
+    .put(verifyRoles(ROLES_LIST.Employer), approveCV)
 
 module.exports = router
