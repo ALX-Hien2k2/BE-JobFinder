@@ -1,11 +1,10 @@
 const Post = require('../models/Post')
+const CV = require('../models/CVs')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const ROLES_LIST = require('../config/allowedRoles')
-
-// Used by guest or jobseeker
+//used by guest or jobseeker
 const getAllPosts = asyncWrapper(async (req, res) => {
-    console.log("req.query", req.query)
     const { maxSalary, minSalary } = req.query
     const { location, userId } = req.query;
     const conditions = {};
@@ -17,6 +16,7 @@ const getAllPosts = asyncWrapper(async (req, res) => {
     }
     conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000 }
     conditions.status = 3
+    conditions.expiredDate = {$gte: new Date(Date.now())}
     let posts = await Post.find(conditions)
         .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
         .limit(process.env.PAGE_SIZE)
@@ -27,8 +27,9 @@ const getAllPosts = asyncWrapper(async (req, res) => {
 })
 
 const createPost = asyncWrapper(async (req, res) => {
-    let post = await Post.create({ ...req.body, userId: req.user.id })
-    res.status(201).json(post)
+    const expiredDate = req.body.expiredDate + " 23:59:59"
+    let post = await Post.create({ ...req.body, userId: req.user.id, expiredDate: expiredDate})
+    res.status(201).json({ post })
 })
 
 const getPost = asyncWrapper(async (req, res, next) => {
@@ -57,7 +58,7 @@ const deletePost = asyncWrapper(async (req, res, next) => {
         post = await Post.findOneAndDelete({ _id: post_id })
     }
 
-    res.status(200).json(post)
+    res.status(200).json({ post })
 })
 
 const updatePost = asyncWrapper(async (req, res, next) => {
@@ -73,11 +74,57 @@ const updatePost = asyncWrapper(async (req, res, next) => {
     if (post.userId != req.user.id) {
         return next(createCustomError(`Unauthorize`, 401))
     }
-    post = await Post.findOneAndUpdate({ _id: post_id }, req.body, {
+    post = await Post.findOneAndUpdate({ _id: post_id }, {...req.body, status: 1}, {
         new: true,
         runValidators: true,
     })
-    res.status(200).json(post)
+    res.status(200).json({ post })
+})
+
+const closePost = asyncWrapper(async (req, res, next) => {
+    let post_id = req.params.id;
+
+    let post = await Post.findOne({ _id: post_id })
+    if (!post) {
+        return next(createCustomError(`No post with id: ${post_id}`, 404))
+    }
+    if (post.userId != req.user.id) {
+        return next(createCustomError(`Unauthorize`, 401))
+    }
+    post = await Post.findOneAndUpdate({ _id: post_id }, {status: 4}, {
+        new: true,
+        runValidators: true,
+    })
+    res.status(200).json({ post })
+})
+
+const getHotJobs = asyncWrapper(async (req, res, next) => {
+    let posts = await Post.aggregate([
+        {
+          $lookup: {
+            from: "CurriculumVitaes",
+            let: { postId: "$_id" },
+            pipeline: [
+              { $match: { $expr: { $and: [{ $eq: ["$$postId", "$postId"] }] } } },
+            ],
+            as: "CVs",
+          },
+        },
+        { $match: { status: 3, expiredDate: {$gte: new Date(Date.now())}}},
+        {
+            $addFields: {
+              totalApplicants: { $size: "$CVs" } 
+            }
+        },
+        {
+            $project: {
+              CVs: 0 
+            }
+        },
+        { $sort: {totalApplicants: -1 }},
+        { $limit: 5}
+      ]);
+    res.status(200).json({ posts })
 })
 
 const approvePost = asyncWrapper(async (req, res, next) => {
@@ -101,4 +148,6 @@ module.exports = {
     deletePost,
     updatePost,
     approvePost,
+    closePost,
+    getHotJobs
 }
