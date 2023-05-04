@@ -12,7 +12,7 @@ const {
     updatePost,
     approvePost,
     closePost,
-    getHotJobs
+    getHotJobs,
 } = require('../controllers/postsController')
 
 router.route('/').get(PageSort, getAllPosts).post(verifyToken, verifyRoles(ROLES_LIST.Employer), createPost)
