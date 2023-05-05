@@ -3,6 +3,7 @@ const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
+const { transporter } = require('../config/email')
 
 const config = process.env;
 
@@ -90,7 +91,20 @@ const forgotPassword = asyncWrapper(async (req, res, next) => {
     const token = jwt.sign(payload, secret, { expiresIn: '300s' })
     const link = `http://localhost:${config.SERVER_PORT}/api/v1/auth/resetPassword/${user._id}/${token}` // Change to frontend link
     console.log('link', link)
-    // Send mail
+
+    // setup email data
+    const mailOptions = {
+        from: config.EMAIL_USER,
+        to: email,
+        subject: 'Reset password link (valid for 5 minutes)',
+        text: `Click this link to reset your password:\n${link}`
+    };
+
+    // send mail
+    let info = await transporter.sendMail(mailOptions);
+    if (!info) {
+        return next(createCustomError("Send mail failed", 409))
+    }
 
     res.status(200).json({ message: 'A link has been sent to your email' })
 })
