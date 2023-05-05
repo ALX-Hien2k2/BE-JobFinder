@@ -6,13 +6,16 @@ const ROLES_LIST = require('../config/allowedRoles')
 //used by guest or jobseeker
 const getAllPosts = asyncWrapper(async (req, res) => {
     const { maxSalary, minSalary } = req.query
-    const { address, userId } = req.query;
+    const { address, userId, search } = req.query;
     const conditions = {};
     if (address) {
         conditions.address = { $regex: new RegExp(address, 'i') };
     }
     if (userId) {
         conditions.userId = userId;
+    }
+    if (search) {
+        conditions.title = { $regex: new RegExp(`\\b${req.query.search}\\b`, 'i') };
     }
     conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000 }
     conditions.status = 3
@@ -149,5 +152,5 @@ module.exports = {
     updatePost,
     approvePost,
     closePost,
-    getHotJobs
+    getHotJobs,
 }
