@@ -2,7 +2,7 @@ const postsRoute = require('./postsRoute')
 const usersRoute = require('./usersRoute')
 const cvsRoute = require('./cvsRoute')
 const authRoute = require('./authRoute')
-const verifyToken = require('../middlewares/verifyToken')
+const { verifyToken } = require('../middlewares/verifyToken')
 const notFound = require('../middlewares/not-found')
 const errorHandlerMiddleware = require('../middlewares/error-handler')
 

@@ -4,6 +4,8 @@ const { createCustomError } = require('../errors/custom-error')
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 
+const config = process.env;
+
 const signUp = asyncWrapper(async (req, res, next) => {
     // Check if user exists
     const { email, userType } = req.body;
@@ -31,7 +33,7 @@ const signUp = asyncWrapper(async (req, res, next) => {
     // Create token
     const token = jwt.sign(
         { id: newUser._id, email: newUser.email, role: newUser.userType },
-        process.env.TOKEN_SECRET,
+        config.TOKEN_SECRET,
         {
             expiresIn: "300s",
         }
@@ -59,7 +61,7 @@ const signIn = asyncWrapper(async (req, res, next) => {
     // Create token
     const token = jwt.sign(
         { id: user._id, email: user.email, role: user.userType },
-        process.env.TOKEN_SECRET,
+        config.TOKEN_SECRET,
         {
             expiresIn: "300s",
         }
@@ -70,7 +72,60 @@ const signIn = asyncWrapper(async (req, res, next) => {
     res.status(201).json(user)
 })
 
+const forgotPassword = asyncWrapper(async (req, res, next) => {
+    const { email } = req.body;
+
+    // Check if user exists
+    let user = await User.findOne({ email: email })
+    if (!user) {
+        return next(createCustomError("Invalid email", 409))
+    }
+
+    // Create one time link valid for 5 minutes
+    const secret = config.TOKEN_SECRET + user.password
+    const payload = { // User's info
+        email: user.email,
+        id: user._id,
+    }
+    const token = jwt.sign(payload, secret, { expiresIn: '300s' })
+    const link = `http://localhost:${config.SERVER_PORT}/api/v1/auth/resetPassword/${user._id}/${token}` // Change to frontend link
+    console.log('link', link)
+    // Send mail
+
+    res.status(200).json({ message: 'A link has been sent to your email' })
+})
+
+const resetPassword = asyncWrapper(async (req, res, next) => {
+    const { id, token } = req.params
+    const { password } = req.body
+
+    // Check if user exists
+    let user = await User.findById(id)
+    if (!user) {
+        return next(createCustomError("Invalid id...", 409))
+    }
+
+    // Check if token is valid
+    const secret = config.TOKEN_SECRET + user.password
+    const payload = jwt.verify(token, secret)
+    if (!payload) {
+        return next(createCustomError("Invalid token", 409))
+    }
+
+    // Hash password
+    const salt = bcrypt.genSaltSync(10);
+    const newPassword = bcrypt.hashSync(password, salt);
+
+    // Update password
+    user.password = newPassword
+    await user.save()
+
+    res.status(200).json({ user })
+})
+
 module.exports = {
     signUp,
-    signIn
+    signIn,
+    forgotPassword,
+    resetPassword,
 }

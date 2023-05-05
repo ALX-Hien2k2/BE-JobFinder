@@ -3,7 +3,7 @@ const router = express.Router()
 const { PageSort } = require('../middlewares/page-sort')
 const ROLES_LIST = require('../config/allowedRoles')
 const verifyRoles = require('../middlewares/verifyRoles')
-const verifyToken = require('../middlewares/verifyToken')
+const { verifyToken } = require('../middlewares/verifyToken')
 const {
     getAllPosts,
     createPost,
