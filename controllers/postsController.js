@@ -24,7 +24,7 @@ const getAllPosts = asyncWrapper(async (req, res) => {
         .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
         .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
-        .populate("userId", "_id");
+        .populate("userId","avatar");
     res.status(200).json(posts)
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
@@ -37,7 +37,7 @@ const createPost = asyncWrapper(async (req, res) => {
 
 const getPost = asyncWrapper(async (req, res, next) => {
     const post_id = req.params.id;
-    let post = await Post.findOne({ _id: post_id })
+    let post = await Post.findOne({ _id: post_id }).populate("userId","avatar");
     if (!post) {
         return next(createCustomError(`No post with id: ${post_id}`, 404))
         // return res.status(404).json({ message: `No post with id: ${post_id}` })
@@ -113,6 +113,21 @@ const getHotJobs = asyncWrapper(async (req, res, next) => {
             as: "CVs",
           },
         },
+        {
+            $lookup: {
+              from: "Users",
+              let: { userId: "$userId" },
+              pipeline: [
+                { $match: { $expr: { $and: [{ $eq: ["$$userId", "$_id"] }] } } },
+                {$project: {
+                    avatar: 1,
+                    __t: 1
+                }}
+              ],
+              as: "userId",
+            },
+        },
+        {$unwind: '$userId'},
         { $match: { status: 3, expiredDate: {$gte: new Date(Date.now())}}},
         {
             $addFields: {
@@ -121,7 +136,7 @@ const getHotJobs = asyncWrapper(async (req, res, next) => {
         },
         {
             $project: {
-              CVs: 0 
+              CVs: 0,
             }
         },
         { $sort: {totalApplicants: -1 }},
