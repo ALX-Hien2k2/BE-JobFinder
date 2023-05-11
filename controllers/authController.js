@@ -110,8 +110,7 @@ const forgotPassword = asyncWrapper(async (req, res, next) => {
 })
 
 const resetPassword = asyncWrapper(async (req, res, next) => {
-    const { id, token } = req.params
-    const { password } = req.body
+    const { id, token, password } = req.body
 
     // Check if user exists
     let user = await User.findById(id)
