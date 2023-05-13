@@ -3,6 +3,7 @@ const Post = require('../models/Post')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const ROLES_LIST = require('../config/allowedRoles')
+const upload = require('../middlewares/aws-upload')
 
 // For Admin and Employer
 const getAllCVs = asyncWrapper(async (req, res, next) => {
@@ -52,7 +53,18 @@ const createCV = asyncWrapper(async (req, res, next) => {
     if (!post) {
         return next(createCustomError(`No post with id: ${postId}`, 404))
     }
-    let cv = await CV.create({ ...req.body, userId: req.user.id })
+
+    await new Promise((resolve, reject) => {
+        upload.single('file')(req, res, function (err) {
+            if (err) {
+                console.log("err", err)
+                return reject(err)
+            }
+            resolve()
+        })
+    })
+
+    // let cv = await CV.create({ ...req.body, userId: req.user.id })
     res.status(201).json(cv)
 })
 

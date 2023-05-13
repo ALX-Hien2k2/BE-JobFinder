@@ -21,7 +21,8 @@ const curriculumVitaeSchema = new Schema({
   },
   status: {
     type: Number,
-    enum: [1, 2, 3, 4],
+    enum: [1, 2, 3, 4], // 1: Chờ phê duyệt; 2: Bị từ chối; 3: Được đánh dấu là quan tâm; 4: Được mời phỏng vấn
+
     default: 1,
   },
 }, { timestamps: true });
