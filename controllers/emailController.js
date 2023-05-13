@@ -1,18 +1,28 @@
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const { transporter } = require('../config/email')
+const { User } = require('../models/Users')
 
 const config = process.env;
 
 const sendmail = asyncWrapper(async (req, res, next) => {
-    const { toEmail, subject, message } = req.body
+    const { userId, toEmail, subject, message } = req.body
+
+    let user = await User.findById(userId)
+    if (!user) {
+        return next(createCustomError("User not found", 409))
+    }
+
+    if (user.userType !== 3) {
+        return next(createCustomError("Only Employers can use this feature", 409))
+    }
 
     // setup email data
     const mailOptions = {
         from: config.EMAIL_USER,
         to: toEmail,
         subject: subject,
-        text: message
+        text: `Công ty: ${user.companyName} \nĐịa chỉ: ${user.address} \nSố điện thoại: ${user.phone} \nEmail: ${user.email} \n\n${message}`
     };
 
     // send mail

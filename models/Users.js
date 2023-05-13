@@ -4,7 +4,7 @@ const Schema = mongoose.Schema;
 const userSchema = new Schema({
     userType: {
         type: Number,
-        enum: [1, 2, 3],
+        enum: [1, 2, 3], // 1: Admin, 2: JobSeeker, 3: Employer
         required: true
     },
     email: {

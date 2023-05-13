@@ -21,12 +21,14 @@ const signUp = asyncWrapper(async (req, res, next) => {
 
     // Create user
     let newUser;
-    if (userType === 2) {
+    if (userType === 1) {
+        newUser = await Admin.create(req.body)
+    } else if (userType === 2) {
         newUser = await JobSeeker.create(req.body)
     } else if (userType === 3) {
         newUser = await Employer.create(req.body)
     } else {
-        newUser = await Admin.create(req.body)
+        return next(createCustomError("Invalid user type", 409))
     }
 
     newUser = newUser.toObject()

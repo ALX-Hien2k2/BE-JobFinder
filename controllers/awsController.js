@@ -1,5 +1,4 @@
 const asyncWrapper = require('../middlewares/async')
-// const config = process.env;
 
 const uploadFile = asyncWrapper(async (req, res, next) => {
     console.log(req.file)
