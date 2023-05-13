@@ -19,25 +19,25 @@ const getAllPosts = asyncWrapper(async (req, res) => {
     }
     conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000 }
     conditions.status = 3
-    conditions.expiredDate = {$gte: new Date(Date.now())}
+    conditions.expiredDate = { $gte: new Date(Date.now()) }
     let posts = await Post.find(conditions)
         .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
         .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
-        .populate("userId",["avatar", "phone", "email"]);
+        .populate("userId", ["avatar", "phone", "email"]);
     res.status(200).json(posts)
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
 
 const createPost = asyncWrapper(async (req, res) => {
     const expiredDate = req.body.expiredDate + " 23:59:59"
-    let post = await Post.create({ ...req.body, userId: req.user.id, expiredDate: expiredDate})
+    let post = await Post.create({ ...req.body, userId: req.user.id, expiredDate: expiredDate })
     res.status(201).json({ post })
 })
 
 const getPost = asyncWrapper(async (req, res, next) => {
     const post_id = req.params.id;
-    let post = await Post.findOne({ _id: post_id }).populate("userId",["avatar", "phone", "email"]);
+    let post = await Post.findOne({ _id: post_id }).populate("userId", ["avatar", "phone", "email"]);
     if (!post) {
         return next(createCustomError(`No post with id: ${post_id}`, 404))
         // return res.status(404).json({ message: `No post with id: ${post_id}` })
@@ -77,7 +77,7 @@ const updatePost = asyncWrapper(async (req, res, next) => {
     if (post.userId != req.user.id) {
         return next(createCustomError(`Unauthorize`, 401))
     }
-    post = await Post.findOneAndUpdate({ _id: post_id }, {...req.body, status: 1}, {
+    post = await Post.findOneAndUpdate({ _id: post_id }, { ...req.body, status: 1 }, {
         new: true,
         runValidators: true,
     })
@@ -94,7 +94,7 @@ const closePost = asyncWrapper(async (req, res, next) => {
     if (post.userId != req.user.id) {
         return next(createCustomError(`Unauthorize`, 401))
     }
-    post = await Post.findOneAndUpdate({ _id: post_id }, {status: 4}, {
+    post = await Post.findOneAndUpdate({ _id: post_id }, { status: 4 }, {
         new: true,
         runValidators: true,
     })
@@ -104,46 +104,48 @@ const closePost = asyncWrapper(async (req, res, next) => {
 const getHotJobs = asyncWrapper(async (req, res, next) => {
     let posts = await Post.aggregate([
         {
-          $lookup: {
-            from: "CurriculumVitaes",
-            let: { postId: "$_id" },
-            pipeline: [
-              { $match: { $expr: { $and: [{ $eq: ["$$postId", "$postId"] }] } } },
-            ],
-            as: "CVs",
-          },
+            $lookup: {
+                from: "CurriculumVitaes",
+                let: { postId: "$_id" },
+                pipeline: [
+                    { $match: { $expr: { $and: [{ $eq: ["$$postId", "$postId"] }] } } },
+                ],
+                as: "CVs",
+            },
         },
         {
             $lookup: {
-              from: "Users",
-              let: { userId: "$userId" },
-              pipeline: [
-                { $match: { $expr: { $and: [{ $eq: ["$$userId", "$_id"] }] } } },
-                {$project: {
-                    avatar: 1,
-                    __t: 1,
-                    phone: 1,
-                    email: 1
-                }}
-              ],
-              as: "userId",
+                from: "Users",
+                let: { userId: "$userId" },
+                pipeline: [
+                    { $match: { $expr: { $and: [{ $eq: ["$$userId", "$_id"] }] } } },
+                    {
+                        $project: {
+                            avatar: 1,
+                            __t: 1,
+                            phone: 1,
+                            email: 1
+                        }
+                    }
+                ],
+                as: "userId",
             },
         },
-        {$unwind: '$userId'},
-        { $match: { status: 3, expiredDate: {$gte: new Date(Date.now())}}},
+        { $unwind: '$userId' },
+        { $match: { status: 3, expiredDate: { $gte: new Date(Date.now()) } } },
         {
             $addFields: {
-              totalApplicants: { $size: "$CVs" } 
+                totalApplicants: { $size: "$CVs" }
             }
         },
         {
             $project: {
-              CVs: 0,
+                CVs: 0,
             }
         },
-        { $sort: {totalApplicants: -1 }},
-        { $limit: 5}
-      ]);
+        { $sort: { totalApplicants: -1 } },
+        { $limit: 5 }
+    ]);
     res.status(200).json({ posts })
 })
 
