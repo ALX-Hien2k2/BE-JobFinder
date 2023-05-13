@@ -24,7 +24,32 @@ const getAllPosts = asyncWrapper(async (req, res) => {
         .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
         .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
-        .populate("userId", ["avatar", "phone", "email"]);
+        .populate("userId", ["avatar", "phone", "email", "description"]);
+    res.status(200).json(posts)
+    // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
+})
+
+const getAllPostsByAdmin = asyncWrapper(async (req, res) => {
+    const { maxSalary, minSalary } = req.query
+    const { address, userId, search, status } = req.query;
+    const conditions = {};
+    if (address) {
+        conditions.address = { $regex: new RegExp(address, 'i') };
+    }
+    if (userId) {
+        conditions.userId = userId;
+    }
+    if (search) {
+        conditions.title = { $regex: new RegExp(`\\b${req.query.search}\\b`, 'i') };
+    }
+    conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000 }
+    conditions.status = status
+    conditions.expiredDate = { $gte: new Date(Date.now()) }
+    let posts = await Post.find(conditions)
+        .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
+        .limit(process.env.PAGE_SIZE)
+        .sort({ [req.column]: req.sortOrder })
+        .populate("userId");
     res.status(200).json(posts)
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
@@ -37,7 +62,7 @@ const createPost = asyncWrapper(async (req, res) => {
 
 const getPost = asyncWrapper(async (req, res, next) => {
     const post_id = req.params.id;
-    let post = await Post.findOne({ _id: post_id }).populate("userId", ["avatar", "phone", "email"]);
+    let post = await Post.findOne({ _id: post_id }).populate("userId", ["avatar", "phone", "email", "description"]);
     if (!post) {
         return next(createCustomError(`No post with id: ${post_id}`, 404))
         // return res.status(404).json({ message: `No post with id: ${post_id}` })
@@ -124,7 +149,8 @@ const getHotJobs = asyncWrapper(async (req, res, next) => {
                             avatar: 1,
                             __t: 1,
                             phone: 1,
-                            email: 1
+                            email: 1,
+                            description: 1
                         }
                     }
                 ],
@@ -172,4 +198,5 @@ module.exports = {
     approvePost,
     closePost,
     getHotJobs,
+    getAllPostsByAdmin
 }
