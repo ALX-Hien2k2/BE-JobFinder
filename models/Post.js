@@ -37,7 +37,8 @@ const PostSchema = new Schema({
     },
     status: {
         type: Number,
-        enum: [1, 2, 3, 4],
+        enum: [1, 2, 3, 4], // 1: Chờ phê duyệt; 2: Không được phê duyệt; 3: Đang mở (được phê duyệt); 4: Đã đóng (do nhà tuyển dụng không tuyển nữa, đã hết hạn, có thể renew lại).
+
         default: 1,
     }
 }, { timestamps: true });

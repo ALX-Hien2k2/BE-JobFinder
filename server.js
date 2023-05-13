@@ -1,6 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv');
 const cors = require("cors");
+const bodyParser = require('body-parser');
 
 const connectToDatabase = require('./config/database');
 const app = express()
@@ -14,6 +15,7 @@ const PORT = process.env.SERVER_PORT || 2345;
 app.use(cors());
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+app.use(bodyParser.json());
 
 route(app)
 

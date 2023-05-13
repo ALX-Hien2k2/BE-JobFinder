@@ -22,7 +22,7 @@ const sendmail = asyncWrapper(async (req, res, next) => {
         from: config.EMAIL_USER,
         to: toEmail,
         subject: subject,
-        text: `Công ty: ${user.companyName} \nĐịa chỉ: ${user.address} \nSố điện thoại: ${user.phone} \nEmail: ${user.email} \n\n${message}`
+        text: `Company: ${user.companyName} \nAddress: ${user.address} \nPhone: ${user.phone} \nEmail: ${user.email} \n\n${message}`
     };
 
     // send mail
