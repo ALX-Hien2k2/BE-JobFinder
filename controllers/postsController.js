@@ -25,7 +25,10 @@ const getAllPosts = asyncWrapper(async (req, res) => {
         .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
         .populate("userId", ["avatar", "phone", "email", "description"]);
-    res.status(200).json(posts)
+
+    const totalPosts = await Post.countDocuments(conditions);
+    const totalPages = Math.ceil(totalPosts / process.env.PAGE_SIZE);
+    res.status(200).json({posts, totalPages})
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
 
@@ -43,14 +46,19 @@ const getAllPostsByAdmin = asyncWrapper(async (req, res) => {
         conditions.title = { $regex: new RegExp(`\\b${req.query.search}\\b`, 'i') };
     }
     conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000 }
-    conditions.status = status
+    if (status){
+        conditions.status = status
+    }
     conditions.expiredDate = { $gte: new Date(Date.now()) }
     let posts = await Post.find(conditions)
         .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
         .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
         .populate("userId");
-    res.status(200).json(posts)
+
+    const totalPosts = await Post.countDocuments(conditions);
+    const totalPages = Math.ceil(totalPosts / process.env.PAGE_SIZE);
+    res.status(200).json({posts, totalPages})
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
 
