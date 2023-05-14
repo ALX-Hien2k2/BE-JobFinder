@@ -3,7 +3,7 @@ const Post = require('../models/Post')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
 const ROLES_LIST = require('../config/allowedRoles')
-// const upload = require('../middlewares/aws-upload')
+const { uploadToS3 } = require('../middlewares/aws-upload')
 
 // For Admin and Employer
 const getAllCVs = asyncWrapper(async (req, res, next) => {
@@ -47,35 +47,36 @@ const getAppliedCVs = asyncWrapper(async (req, res, next) => {
     res.status(200).json(CVs)
 })
 
-const multer = require('multer')
-const upload = multer({ dest: 'uploads/' })
-
 const createCV = asyncWrapper(async (req, res, next) => {
-    // let { postId, description } = req.body
-    console.log("req.postId", req.body.postId)
-    console.log("req.description", req.body.description)
-    console.log("req.file", req.file)
+    let { postId, description } = req.body
+    let { file } = req
 
+    // Validate the data
+    if (!postId) {
+        return next(createCustomError(`postId is required`, 400))
+    }
+    if (!description) {
+        return next(createCustomError(`description is required`, 400))
+    }
+    if (!file) {
+        return next(createCustomError(`File is required`, 400))
+    }
+
+    // Check if post exists
     let post = await Post.findById(postId)
     if (!post) {
         return next(createCustomError(`No post with id: ${postId}`, 404))
     }
 
-    // await new Promise((resolve, reject) => {
-    //     upload.single('file')(req, res, function (err) {
-    //         if (err) {
-    //             console.log("err", err)
-    //             return reject(err)
-    //         }
-    //         resolve()
-    //     })
-    // })
+    // Upload file to S3
+    let cvUrl = await uploadToS3(file);
 
+    // Create new CV object
     let newCv_Obj = {
         userId: req.user.id,
         postId: postId,
         description: description,
-        CVFileURL: req.file.location
+        CVFileURL: cvUrl
     }
 
     let cv = await CV.create(newCv_Obj)
