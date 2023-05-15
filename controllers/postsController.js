@@ -51,14 +51,9 @@ const getAllPostsByAdmin = asyncWrapper(async (req, res) => {
     }
     conditions.expiredDate = { $gte: new Date(Date.now()) }
     let posts = await Post.find(conditions)
-        .skip((req.pageNumber - 1) * process.env.PAGE_SIZE) // Bỏ qua số lượng đối tượng cần bỏ qua để đến trang hiện tại
-        .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
         .populate("userId");
-
-    const totalPosts = await Post.countDocuments(conditions);
-    const totalPages = Math.ceil(totalPosts / process.env.PAGE_SIZE);
-    res.status(200).json({posts, totalPages})
+    res.status(200).json({posts})
     // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
 })
 
