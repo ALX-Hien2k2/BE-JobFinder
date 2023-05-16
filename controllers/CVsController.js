@@ -24,6 +24,7 @@ const getAllCVs = asyncWrapper(async (req, res, next) => {
     }
     let CVs = await CV.find(conditions)
         .sort({ createdAt: sortOption || "asc" })
+        .populate("userId", ["name", "avatar", "email", "phone", "address"]);
     res.status(200).json(CVs)
 })
 
@@ -44,6 +45,7 @@ const getAppliedCVs = asyncWrapper(async (req, res, next) => {
     }
     let CVs = await CV.find(conditions)
         .sort({ createdAt: sortOption || "asc" })
+        .populate("userId", ["name", "avatar", "email", "phone", "address"]);
     res.status(200).json(CVs)
 })
 
@@ -86,6 +88,8 @@ const createCV = asyncWrapper(async (req, res, next) => {
 const getCV = asyncWrapper(async (req, res, next) => {
     let cv_id = req.params.id;
     let cv = await CV.findOne({ _id: cv_id })
+        .populate("userId", ["name", "avatar", "email", "phone", "address"]);
+
     if (!cv) {
         return next(createCustomError(`No CV with id: ${cv_id}`, 404))
     }
@@ -147,6 +151,7 @@ const approveCV = asyncWrapper(async (req, res, next) => {
         new: true,
         runValidators: true,
     })
+        .populate("userId", ["name", "avatar", "email", "phone", "address"]);
     if (!cv) {
         return next(createCustomError(`No CV with id: ${cv_id}`, 404))
     }
