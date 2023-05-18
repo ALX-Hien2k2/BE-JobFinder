@@ -38,7 +38,7 @@ const signUp = asyncWrapper(async (req, res, next) => {
         { id: newUser._id, email: newUser.email, role: newUser.userType },
         config.TOKEN_SECRET,
         {
-            expiresIn: "300s",
+            expiresIn: "10m",
         }
     );
 
@@ -66,7 +66,7 @@ const signIn = asyncWrapper(async (req, res, next) => {
         { id: user._id, email: user.email, role: user.userType },
         config.TOKEN_SECRET,
         {
-            expiresIn: "300s",
+            expiresIn: "10m",
         }
     );
     user = user.toObject()
