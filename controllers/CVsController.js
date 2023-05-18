@@ -1,4 +1,5 @@
 const { CV } = require('../models/CVs')
+const { User, Employer } = require('../models/Users')
 const Post = require('../models/Post')
 const asyncWrapper = require('../middlewares/async')
 const { createCustomError } = require('../errors/custom-error')
@@ -24,7 +25,17 @@ const getAllCVs = asyncWrapper(async (req, res, next) => {
     }
     let CVs = await CV.find(conditions)
         .sort({ createdAt: sortOption || "asc" })
-        .populate("userId", ["name", "avatar", "email", "phone", "address"]);
+        .populate("userId", ["name", "avatar", "email", "phone", "address"])
+        .populate({
+            path: 'postId',
+            model: Post,
+            select: 'title',
+            populate: {
+                path: 'userId',
+                model: User,
+                select: 'companyName',
+            },
+        })
     res.status(200).json(CVs)
 })
 
@@ -45,7 +56,17 @@ const getAppliedCVs = asyncWrapper(async (req, res, next) => {
     }
     let CVs = await CV.find(conditions)
         .sort({ createdAt: sortOption || "asc" })
-        .populate("userId", ["name", "avatar", "email", "phone", "address"]);
+        .populate("userId", ["name", "avatar", "email", "phone", "address"])
+        .populate({
+            path: 'postId',
+            model: Post,
+            select: 'title',
+            populate: {
+                path: 'userId',
+                model: User,
+                select: 'companyName',
+            },
+        })
     res.status(200).json(CVs)
 })
 
@@ -88,13 +109,23 @@ const createCV = asyncWrapper(async (req, res, next) => {
 const getCV = asyncWrapper(async (req, res, next) => {
     let cv_id = req.params.id;
     let cv = await CV.findOne({ _id: cv_id })
-        .populate("userId", ["name", "avatar", "email", "phone", "address"]);
-
+        .populate("userId", ["name", "avatar", "email", "phone", "address"])
+        .populate({
+            path: 'postId',
+            model: Post,
+            select: 'title',
+            populate: {
+                path: 'userId',
+                model: User,
+                select: 'companyName',
+            },
+        })
+    // Note: Vì cv đã được populate nên userId là object chứa các field khác của user, bao gồm cả id
     if (!cv) {
         return next(createCustomError(`No CV with id: ${cv_id}`, 404))
     }
     if (req.user.role === ROLES_LIST.JobSeeker) {
-        if (cv.userId != req.user.id) {
+        if (cv.userId.id != req.user.id) {
             return next(createCustomError(`Unauthorize`, 401))
         }
     } else if (req.user.role === ROLES_LIST.Employer) {
