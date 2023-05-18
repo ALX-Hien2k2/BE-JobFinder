@@ -191,6 +191,29 @@ const approvePost = asyncWrapper(async (req, res, next) => {
     res.status(200).json(post)
 })
 
+const getAllPostsByEmployer = asyncWrapper(async (req, res) => {
+    const { maxSalary, minSalary } = req.query
+    const { address, search, status } = req.query;
+    const conditions = {};
+    if (address) {
+        conditions.address = { $regex: new RegExp(address, 'i') };
+    }
+    
+    conditions.userId = req.user.id;
+
+    if (search) {
+        conditions.title = { $regex: new RegExp(`\\b${req.query.search}\\b`, 'i') };
+    }
+    conditions.salary = { $gte: minSalary || 0, $lte: maxSalary || 1000000000000000 }
+    if (status){
+        conditions.status = status
+    }
+    conditions.expiredDate = { $gte: new Date(Date.now()) }
+    let posts = await Post.find(conditions)
+        .sort({ [req.column]: req.sortOrder })
+    res.status(200).json({posts})
+    // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
+})
 
 module.exports = {
     getAllPosts,
@@ -201,5 +224,6 @@ module.exports = {
     approvePost,
     closePost,
     getHotJobs,
-    getAllPostsByAdmin
+    getAllPostsByAdmin,
+    getAllPostsByEmployer
 }

@@ -11,7 +11,7 @@ const errorHandlerMiddleware = require('../middlewares/error-handler')
 const route = (app) => {
     app.use('/api/v1/auth', authRoute);
     app.use('/api/v1/posts', postsRoute);
-    app.use('/api/v1/users', verifyToken, usersRoute);
+    app.use('/api/v1/users', usersRoute);
     app.use('/api/v1/cvs', verifyToken, cvsRoute);
     app.use('/api/v1/email', emailRoute);
     app.use('/api/v1/aws', awsRoute);
