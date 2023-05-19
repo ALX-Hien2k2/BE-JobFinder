@@ -129,6 +129,23 @@ const closePost = asyncWrapper(async (req, res, next) => {
     res.status(200).json({ post })
 })
 
+const openPost = asyncWrapper(async (req, res, next) => {
+    let post_id = req.params.id;
+
+    let post = await Post.findOne({ _id: post_id })
+    if (!post) {
+        return next(createCustomError(`No post with id: ${post_id}`, 404))
+    }
+    if (post.userId != req.user.id) {
+        return next(createCustomError(`Unauthorize`, 401))
+    }
+    post = await Post.findOneAndUpdate({ _id: post_id }, { status: 3 }, {
+        new: true,
+        runValidators: true,
+    })
+    res.status(200).json({ post })
+})
+
 const getHotJobs = asyncWrapper(async (req, res, next) => {
     let posts = await Post.aggregate([
         {
@@ -173,7 +190,7 @@ const getHotJobs = asyncWrapper(async (req, res, next) => {
             }
         },
         { $sort: { totalApplicants: -1 } },
-        { $limit: 5 }
+        { $limit: 8 }
     ]);
     res.status(200).json({ posts })
 })
@@ -193,7 +210,7 @@ const approvePost = asyncWrapper(async (req, res, next) => {
 
 const getAllPostsByEmployer = asyncWrapper(async (req, res) => {
     const { maxSalary, minSalary } = req.query
-    const { address, search, status } = req.query;
+    const { address, search, status, expired } = req.query;
     const conditions = {};
     if (address) {
         conditions.address = { $regex: new RegExp(address, 'i') };
@@ -208,11 +225,23 @@ const getAllPostsByEmployer = asyncWrapper(async (req, res) => {
     if (status){
         conditions.status = status
     }
-    conditions.expiredDate = { $gte: new Date(Date.now()) }
+    if (expired){
+        if (expired == "1"){
+            conditions.expiredDate = { $lt: new Date(Date.now()) }
+        }
+        else {
+            conditions.expiredDate = { $gte: new Date(Date.now()) }
+        }
+    }
     let posts = await Post.find(conditions)
+        .skip((req.pageNumber - 1) * process.env.PAGE_SIZE)
+        .limit(process.env.PAGE_SIZE)
         .sort({ [req.column]: req.sortOrder })
-    res.status(200).json({posts})
-    // res.status(200).json({ status: "success", data: { nbHits: posts.length, posts } })
+        .populate("userId",["avatar", "phone", "email", "description"]);
+
+    const totalPosts = await Post.countDocuments(conditions);
+    const totalPages = Math.ceil(totalPosts / process.env.PAGE_SIZE);
+    res.status(200).json({posts, totalPages})
 })
 
 module.exports = {
@@ -225,5 +254,6 @@ module.exports = {
     closePost,
     getHotJobs,
     getAllPostsByAdmin,
-    getAllPostsByEmployer
+    getAllPostsByEmployer,
+    openPost
 }
