@@ -91,7 +91,7 @@ const forgotPassword = asyncWrapper(async (req, res, next) => {
         id: user._id,
     }
     const token = jwt.sign(payload, secret, { expiresIn: '300s' })
-    const link = `http://localhost:${config.SERVER_PORT}/api/v1/auth/resetPassword/${user._id}/${token}` // Change to frontend link
+    const link = `https://jobeevn.netlify.app/resetPassword/${user._id}/${token}` // Change to frontend link
     console.log('link', link)
 
     // setup email data
